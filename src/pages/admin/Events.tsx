@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ const events = [
 ];
 
 export default function AdminEvents() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredEvents = events.filter((event) =>
@@ -77,7 +79,7 @@ export default function AdminEvents() {
           <h1 className="text-3xl font-bold text-foreground">Events</h1>
           <p className="text-muted-foreground">Manage and organize your events</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate("/admin/events/new")}>
           <Plus className="h-4 w-4 mr-2" />
           Create Event
         </Button>
@@ -133,8 +135,8 @@ export default function AdminEvents() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>Edit Event</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/admin/events/${event.id}`)}>View Details</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/admin/events/${event.id}/edit`)}>Edit Event</DropdownMenuItem>
                     <DropdownMenuItem>Manage Volunteers</DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive">Cancel Event</DropdownMenuItem>
                   </DropdownMenuContent>

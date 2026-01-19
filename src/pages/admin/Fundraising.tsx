@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -38,6 +39,7 @@ const recentDonations = [
 ];
 
 export default function AdminFundraising() {
+  const navigate = useNavigate();
   const totalRaised = campaigns.reduce((sum, c) => sum + c.raised, 0);
   const totalGoal = campaigns.reduce((sum, c) => sum + c.goal, 0);
   const totalDonors = campaigns.reduce((sum, c) => sum + c.donors, 0);
@@ -49,7 +51,7 @@ export default function AdminFundraising() {
           <h1 className="text-3xl font-bold text-foreground">Fundraising</h1>
           <p className="text-muted-foreground">Track campaigns and donations</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate("/admin/fundraising/campaigns/new")}>
           <Plus className="h-4 w-4 mr-2" />
           New Campaign
         </Button>

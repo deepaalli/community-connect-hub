@@ -15,6 +15,11 @@ import AdminVolunteers from "./pages/admin/Volunteers";
 import AdminFundraising from "./pages/admin/Fundraising";
 import AdminOrganization from "./pages/admin/Organization";
 import AdminSettings from "./pages/admin/Settings";
+import EventForm from "./pages/admin/EventForm";
+import EventDetail from "./pages/admin/EventDetail";
+import VolunteerForm from "./pages/admin/VolunteerForm";
+import VolunteerDetail from "./pages/admin/VolunteerDetail";
+import CampaignForm from "./pages/admin/CampaignForm";
 
 const queryClient = new QueryClient();
 
@@ -34,8 +39,16 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="events" element={<AdminEvents />} />
+            <Route path="events/new" element={<EventForm />} />
+            <Route path="events/:id" element={<EventDetail />} />
+            <Route path="events/:id/edit" element={<EventForm />} />
             <Route path="volunteers" element={<AdminVolunteers />} />
+            <Route path="volunteers/new" element={<VolunteerForm />} />
+            <Route path="volunteers/:id" element={<VolunteerDetail />} />
+            <Route path="volunteers/:id/edit" element={<VolunteerForm />} />
             <Route path="fundraising" element={<AdminFundraising />} />
+            <Route path="fundraising/campaigns/new" element={<CampaignForm />} />
+            <Route path="fundraising/campaigns/:id/edit" element={<CampaignForm />} />
             <Route path="organization" element={<AdminOrganization />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>

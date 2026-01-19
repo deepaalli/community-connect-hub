@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ const volunteers = [
 ];
 
 export default function AdminVolunteers() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredVolunteers = volunteers.filter(
@@ -97,7 +99,7 @@ export default function AdminVolunteers() {
           <h1 className="text-3xl font-bold text-foreground">Volunteers</h1>
           <p className="text-muted-foreground">Manage your volunteer database</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate("/admin/volunteers/new")}>
           <Plus className="h-4 w-4 mr-2" />
           Add Volunteer
         </Button>
@@ -181,8 +183,8 @@ export default function AdminVolunteers() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/admin/volunteers/${volunteer.id}`)}>View Profile</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/admin/volunteers/${volunteer.id}/edit`)}>Edit Details</DropdownMenuItem>
                         <DropdownMenuItem>Assign to Event</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
                       </DropdownMenuContent>
