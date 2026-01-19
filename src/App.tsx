@@ -20,6 +20,9 @@ import EventDetail from "./pages/admin/EventDetail";
 import VolunteerForm from "./pages/admin/VolunteerForm";
 import VolunteerDetail from "./pages/admin/VolunteerDetail";
 import CampaignForm from "./pages/admin/CampaignForm";
+import AdminDonors from "./pages/admin/Donors";
+import DonorDetail from "./pages/admin/DonorDetail";
+import DonorForm from "./pages/admin/DonorForm";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +52,10 @@ const App = () => (
             <Route path="fundraising" element={<AdminFundraising />} />
             <Route path="fundraising/campaigns/new" element={<CampaignForm />} />
             <Route path="fundraising/campaigns/:id/edit" element={<CampaignForm />} />
+            <Route path="donors" element={<AdminDonors />} />
+            <Route path="donors/new" element={<DonorForm />} />
+            <Route path="donors/:id" element={<DonorDetail />} />
+            <Route path="donors/:id/edit" element={<DonorForm />} />
             <Route path="organization" element={<AdminOrganization />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
