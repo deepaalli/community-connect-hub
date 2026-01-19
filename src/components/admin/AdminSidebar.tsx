@@ -19,6 +19,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -26,6 +27,7 @@ const mainNavItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Events", url: "/admin/events", icon: Calendar },
   { title: "Volunteers", url: "/admin/volunteers", icon: Users },
+  { title: "Donors", url: "/admin/donors", icon: UserCheck },
   { title: "Fundraising", url: "/admin/fundraising", icon: Heart },
 ];
 
