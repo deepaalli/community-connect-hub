@@ -6,7 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Target, Calendar, DollarSign, Image } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowLeft, Target, Calendar, DollarSign, Image, Settings, 
+  Plus, Trash2, Upload, X, Heart
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,6 +18,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface DonationTier {
+  id: string;
+  amount: number;
+  label: string;
+  impactDescription: string;
+}
+
+const categoryTags = [
+  "Emergency", "Education", "Healthcare", "Environment", "Housing",
+  "Food", "Youth", "Seniors", "Animals", "Arts", "Community"
+];
 
 export default function CampaignForm() {
   const navigate = useNavigate();
@@ -22,33 +46,97 @@ export default function CampaignForm() {
 
   const [formData, setFormData] = useState({
     title: "",
+    tagline: "",
     description: "",
-    shortDescription: "",
+    category: "",
+    tags: [] as string[],
+    coverImage: null as File | null,
+    coverImagePreview: "",
+    shareImage: null as File | null,
+    shareImagePreview: "",
+    whereFundsGo: "",
+    whoBenefits: "",
+    expectedOutcomes: "",
     goal: "",
     startDate: "",
     endDate: "",
-    category: "",
-    status: "draft",
-    imageUrl: "",
+    showProgressMeter: true,
+    minimumDonation: "",
+    allowRecurring: true,
+    recurringFrequency: "monthly",
+    allowCoverFees: true,
+    allowAnonymous: true,
+    receiptSubject: "",
+    receiptMessage: "",
+    taxReceiptFooter: "",
     isPublic: true,
     isFeatured: false,
-    allowRecurring: true,
-    minimumDonation: "",
-    suggestedAmounts: "",
-    thankYouMessage: "",
-    contactEmail: "",
-    notes: "",
+    internalNotes: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [donationTiers, setDonationTiers] = useState<DonationTier[]>([]);
+  const [newTier, setNewTier] = useState({ amount: "", label: "", impactDescription: "" });
+  const [tagInput, setTagInput] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSubmit = (e: React.FormEvent, isDraft = false) => {
     e.preventDefault();
-    // TODO: Save campaign data
-    console.log("Saving campaign:", formData);
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title) newErrors.title = "Campaign title is required";
+    if (!formData.goal) newErrors.goal = "Fundraising goal is required";
+
+    if (!isDraft && Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    console.log("Saving campaign:", { ...formData, donationTiers, status: isDraft ? "draft" : "published" });
     navigate("/admin/fundraising");
   };
 
-  const handleChange = (field: string, value: string | boolean) => {
+  const handleChange = (field: string, value: string | boolean | string[] | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleImageUpload = (field: "coverImage" | "shareImage", e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleChange(field, file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleChange(`${field}Preview`, reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addTag = (tag: string) => {
+    if (tag && !formData.tags.includes(tag)) {
+      handleChange("tags", [...formData.tags, tag]);
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    handleChange("tags", formData.tags.filter((t) => t !== tag));
+  };
+
+  const addDonationTier = () => {
+    if (newTier.amount && newTier.label) {
+      setDonationTiers([
+        ...donationTiers,
+        { ...newTier, id: Date.now().toString(), amount: parseFloat(newTier.amount) }
+      ]);
+      setNewTier({ amount: "", label: "", impactDescription: "" });
+    }
+  };
+
+  const removeDonationTier = (id: string) => {
+    setDonationTiers(donationTiers.filter((t) => t.id !== id));
   };
 
   return (
@@ -67,9 +155,9 @@ export default function CampaignForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Basic Information */}
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Campaign Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -86,18 +174,22 @@ export default function CampaignForm() {
                   placeholder="e.g., Winter Shelter Initiative"
                   value={formData.title}
                   onChange={(e) => handleChange("title", e.target.value)}
-                  required
+                  className={errors.title ? "border-destructive" : ""}
                 />
+                {errors.title && <p className="text-sm text-destructive">{errors.title}</p>}
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="shortDescription">Short Description</Label>
+                <Label htmlFor="tagline">Short Tagline</Label>
                 <Input
-                  id="shortDescription"
+                  id="tagline"
                   placeholder="Brief tagline for the campaign..."
-                  value={formData.shortDescription}
-                  onChange={(e) => handleChange("shortDescription", e.target.value)}
+                  value={formData.tagline}
+                  onChange={(e) => handleChange("tagline", e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">Appears in previews and shares</p>
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="description">Full Description</Label>
                 <Textarea
@@ -107,46 +199,159 @@ export default function CampaignForm() {
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">Supports rich text formatting</p>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => handleChange("category", value)}
-                >
+                <Label>Category</Label>
+                <Select value={formData.category} onValueChange={(v) => handleChange("category", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover">
                     <SelectItem value="shelter">Shelter & Housing</SelectItem>
                     <SelectItem value="education">Education</SelectItem>
                     <SelectItem value="healthcare">Healthcare</SelectItem>
                     <SelectItem value="food">Food & Hunger</SelectItem>
                     <SelectItem value="environment">Environment</SelectItem>
-                    <SelectItem value="youth">Youth Programs</SelectItem>
-                    <SelectItem value="seniors">Senior Care</SelectItem>
                     <SelectItem value="emergency">Emergency Relief</SelectItem>
                     <SelectItem value="general">General Fund</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleChange("status", value)}
-                >
+                <Label>Tags</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {formData.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <Select onValueChange={addTag}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="Add tags..." />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="paused">Paused</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectContent className="bg-popover">
+                    {categoryTags.filter((t) => !formData.tags.includes(t)).map((tag) => (
+                      <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Media */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="h-5 w-5" />
+                Media
+              </CardTitle>
+              <CardDescription>Campaign visuals</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Cover Image</Label>
+                <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                  {formData.coverImagePreview ? (
+                    <div className="relative">
+                      <img src={formData.coverImagePreview} alt="Cover Preview" className="max-h-32 mx-auto rounded" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => { handleChange("coverImage", null); handleChange("coverImagePreview", ""); }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Upload cover image</p>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload("coverImage", e)} />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Share Image</Label>
+                <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                  {formData.shareImagePreview ? (
+                    <div className="relative">
+                      <img src={formData.shareImagePreview} alt="Share Preview" className="max-h-32 mx-auto rounded" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => { handleChange("shareImage", null); handleChange("shareImagePreview", ""); }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Upload social share image</p>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload("shareImage", e)} />
+                    </label>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">Recommended: 1200x630px for social media</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Impact Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                Impact Section
+              </CardTitle>
+              <CardDescription>Describe the impact of donations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="whereFundsGo">Where Funds Go</Label>
+                <Textarea
+                  id="whereFundsGo"
+                  placeholder="Explain how the funds will be used..."
+                  rows={3}
+                  value={formData.whereFundsGo}
+                  onChange={(e) => handleChange("whereFundsGo", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whoBenefits">Who Benefits</Label>
+                <Textarea
+                  id="whoBenefits"
+                  placeholder="Describe who will be helped by this campaign..."
+                  rows={3}
+                  value={formData.whoBenefits}
+                  onChange={(e) => handleChange("whoBenefits", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expectedOutcomes">Expected Outcomes</Label>
+                <Textarea
+                  id="expectedOutcomes"
+                  placeholder="What results do you expect to achieve?"
+                  rows={3}
+                  value={formData.expectedOutcomes}
+                  onChange={(e) => handleChange("expectedOutcomes", e.target.value)}
+                />
               </div>
             </CardContent>
           </Card>
@@ -155,7 +360,7 @@ export default function CampaignForm() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
+                <Calendar className="h-5 w-5" />
                 Goal & Timeline
               </CardTitle>
               <CardDescription>Fundraising target and dates</CardDescription>
@@ -169,158 +374,268 @@ export default function CampaignForm() {
                   placeholder="10000"
                   value={formData.goal}
                   onChange={(e) => handleChange("goal", e.target.value)}
-                  required
+                  className={errors.goal ? "border-destructive" : ""}
                 />
+                {errors.goal && <p className="text-sm text-destructive">{errors.goal}</p>}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleChange("startDate", e.target.value)}
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => handleChange("startDate", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => handleChange("endDate", e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => handleChange("endDate", e.target.value)}
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Show Progress Meter</Label>
+                  <p className="text-sm text-muted-foreground">Display public goal progress</p>
+                </div>
+                <Switch
+                  checked={formData.showProgressMeter}
+                  onCheckedChange={(checked) => handleChange("showProgressMeter", checked)}
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Donation Settings */}
-          <Card>
+          {/* Donation Tiers */}
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
                 Donation Settings
               </CardTitle>
-              <CardDescription>Configure donation options</CardDescription>
+              <CardDescription>Configure donation options and suggested tiers</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="minimumDonation">Minimum Donation ($)</Label>
+                  <Input
+                    id="minimumDonation"
+                    type="number"
+                    placeholder="5"
+                    value={formData.minimumDonation}
+                    onChange={(e) => handleChange("minimumDonation", e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Allow Recurring</Label>
+                    <p className="text-sm text-muted-foreground">Monthly donations</p>
+                  </div>
+                  <Switch
+                    checked={formData.allowRecurring}
+                    onCheckedChange={(checked) => handleChange("allowRecurring", checked)}
+                  />
+                </div>
+                {formData.allowRecurring && (
+                  <div className="space-y-2">
+                    <Label>Frequency</Label>
+                    <Select value={formData.recurringFrequency} onValueChange={(v) => handleChange("recurringFrequency", v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover">
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Allow Cover Fees</Label>
+                    <p className="text-sm text-muted-foreground">Let donors cover processing fees</p>
+                  </div>
+                  <Switch
+                    checked={formData.allowCoverFees}
+                    onCheckedChange={(checked) => handleChange("allowCoverFees", checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Allow Anonymous</Label>
+                    <p className="text-sm text-muted-foreground">Let donors give anonymously</p>
+                  </div>
+                  <Switch
+                    checked={formData.allowAnonymous}
+                    onCheckedChange={(checked) => handleChange("allowAnonymous", checked)}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <Label className="text-base font-semibold">Suggested Donation Tiers</Label>
+                <p className="text-sm text-muted-foreground mb-4">Add suggested amounts with impact descriptions</p>
+                
+                <div className="grid md:grid-cols-4 gap-4 mb-4">
+                  <div className="space-y-2">
+                    <Label>Amount ($)</Label>
+                    <Input
+                      type="number"
+                      placeholder="25"
+                      value={newTier.amount}
+                      onChange={(e) => setNewTier({ ...newTier, amount: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Label</Label>
+                    <Input
+                      placeholder="Supporter"
+                      value={newTier.label}
+                      onChange={(e) => setNewTier({ ...newTier, label: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Impact Description</Label>
+                    <Input
+                      placeholder="Provides one meal"
+                      value={newTier.impactDescription}
+                      onChange={(e) => setNewTier({ ...newTier, impactDescription: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>&nbsp;</Label>
+                    <Button type="button" onClick={addDonationTier} className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Tier
+                    </Button>
+                  </div>
+                </div>
+
+                {donationTiers.length > 0 && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Label</TableHead>
+                          <TableHead>Impact</TableHead>
+                          <TableHead className="w-12"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {donationTiers.map((tier) => (
+                          <TableRow key={tier.id}>
+                            <TableCell className="font-medium">${tier.amount}</TableCell>
+                            <TableCell>{tier.label}</TableCell>
+                            <TableCell className="text-muted-foreground">{tier.impactDescription}</TableCell>
+                            <TableCell>
+                              <Button type="button" variant="ghost" size="icon" onClick={() => removeDonationTier(tier.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Receipt Customization */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Receipt Customization</CardTitle>
+              <CardDescription>Customize donation receipts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="minimumDonation">Minimum Donation ($)</Label>
+                <Label htmlFor="receiptSubject">Receipt Subject</Label>
                 <Input
-                  id="minimumDonation"
-                  type="number"
-                  placeholder="5"
-                  value={formData.minimumDonation}
-                  onChange={(e) => handleChange("minimumDonation", e.target.value)}
+                  id="receiptSubject"
+                  placeholder="Thank you for your donation!"
+                  value={formData.receiptSubject}
+                  onChange={(e) => handleChange("receiptSubject", e.target.value)}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="suggestedAmounts">Suggested Amounts</Label>
-                <Input
-                  id="suggestedAmounts"
-                  placeholder="25, 50, 100, 250"
-                  value={formData.suggestedAmounts}
-                  onChange={(e) => handleChange("suggestedAmounts", e.target.value)}
+                <Label htmlFor="receiptMessage">Receipt Message</Label>
+                <Textarea
+                  id="receiptMessage"
+                  placeholder="Personal message to include in the receipt..."
+                  rows={3}
+                  value={formData.receiptMessage}
+                  onChange={(e) => handleChange("receiptMessage", e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Comma-separated amounts</p>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Allow Recurring Donations</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Let donors set up monthly giving
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.allowRecurring}
-                  onCheckedChange={(checked) => handleChange("allowRecurring", checked)}
+
+              <div className="space-y-2">
+                <Label htmlFor="taxReceiptFooter">Tax Receipt Footer</Label>
+                <Textarea
+                  id="taxReceiptFooter"
+                  placeholder="Legal text for tax receipts..."
+                  rows={2}
+                  value={formData.taxReceiptFooter}
+                  onChange={(e) => handleChange("taxReceiptFooter", e.target.value)}
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Media & Presentation */}
+          {/* Campaign Settings */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Image className="h-5 w-5" />
-                Media & Presentation
+                <Settings className="h-5 w-5" />
+                Campaign Settings
               </CardTitle>
-              <CardDescription>Campaign visuals and messaging</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="imageUrl">Campaign Image URL</Label>
-                <Input
-                  id="imageUrl"
-                  placeholder="https://example.com/image.jpg"
-                  value={formData.imageUrl}
-                  onChange={(e) => handleChange("imageUrl", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="thankYouMessage">Thank You Message</Label>
-                <Textarea
-                  id="thankYouMessage"
-                  placeholder="Message shown to donors after their contribution..."
-                  rows={3}
-                  value={formData.thankYouMessage}
-                  onChange={(e) => handleChange("thankYouMessage", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contactEmail">Contact Email</Label>
-                <Input
-                  id="contactEmail"
-                  type="email"
-                  placeholder="donations@example.org"
-                  value={formData.contactEmail}
-                  onChange={(e) => handleChange("contactEmail", e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Settings */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Campaign Settings</CardTitle>
               <CardDescription>Visibility and promotion options</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Public Campaign</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Visible to all visitors on the website
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.isPublic}
-                    onCheckedChange={(checked) => handleChange("isPublic", checked)}
-                  />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Public Campaign</Label>
+                  <p className="text-sm text-muted-foreground">Visible to all visitors</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Featured Campaign</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Highlight on the homepage
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.isFeatured}
-                    onCheckedChange={(checked) => handleChange("isFeatured", checked)}
-                  />
-                </div>
+                <Switch
+                  checked={formData.isPublic}
+                  onCheckedChange={(checked) => handleChange("isPublic", checked)}
+                />
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Featured Campaign</Label>
+                  <p className="text-sm text-muted-foreground">Highlight on homepage</p>
+                </div>
+                <Switch
+                  checked={formData.isFeatured}
+                  onCheckedChange={(checked) => handleChange("isFeatured", checked)}
+                />
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="notes">Internal Notes</Label>
+                <Label htmlFor="internalNotes">Internal Notes</Label>
                 <Textarea
-                  id="notes"
+                  id="internalNotes"
                   placeholder="Notes for organizers only..."
-                  rows={2}
-                  value={formData.notes}
-                  onChange={(e) => handleChange("notes", e.target.value)}
+                  rows={3}
+                  value={formData.internalNotes}
+                  onChange={(e) => handleChange("internalNotes", e.target.value)}
                 />
               </div>
             </CardContent>
@@ -328,15 +643,15 @@ export default function CampaignForm() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => navigate("/admin/fundraising")}>
             Cancel
           </Button>
-          <Button type="submit" variant="outline">
-            Save as Draft
+          <Button type="button" variant="outline" onClick={(e) => handleSubmit(e as any, true)}>
+            Save Draft
           </Button>
           <Button type="submit">
-            {isEditing ? "Update Campaign" : "Create Campaign"}
+            {isEditing ? "Update Campaign" : "Publish Campaign"}
           </Button>
         </div>
       </form>
