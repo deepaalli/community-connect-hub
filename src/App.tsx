@@ -17,9 +17,14 @@ import AdminOrganization from "./pages/admin/Organization";
 import AdminSettings from "./pages/admin/Settings";
 import EventForm from "./pages/admin/EventForm";
 import EventDetail from "./pages/admin/EventDetail";
+import EventCheckin from "./pages/admin/EventCheckin";
 import VolunteerForm from "./pages/admin/VolunteerForm";
 import VolunteerDetail from "./pages/admin/VolunteerDetail";
 import CampaignForm from "./pages/admin/CampaignForm";
+import Campaigns from "./pages/admin/Campaigns";
+import CampaignDetail from "./pages/admin/CampaignDetail";
+import Donations from "./pages/admin/Donations";
+import HoursApproval from "./pages/admin/HoursApproval";
 import AdminDonors from "./pages/admin/Donors";
 import DonorDetail from "./pages/admin/DonorDetail";
 import DonorForm from "./pages/admin/DonorForm";
@@ -45,13 +50,18 @@ const App = () => (
             <Route path="events/new" element={<EventForm />} />
             <Route path="events/:id" element={<EventDetail />} />
             <Route path="events/:id/edit" element={<EventForm />} />
+            <Route path="events/:id/checkin" element={<EventCheckin />} />
             <Route path="volunteers" element={<AdminVolunteers />} />
             <Route path="volunteers/new" element={<VolunteerForm />} />
             <Route path="volunteers/:id" element={<VolunteerDetail />} />
             <Route path="volunteers/:id/edit" element={<VolunteerForm />} />
+            <Route path="hours-approval" element={<HoursApproval />} />
             <Route path="fundraising" element={<AdminFundraising />} />
+            <Route path="fundraising/campaigns" element={<Campaigns />} />
             <Route path="fundraising/campaigns/new" element={<CampaignForm />} />
+            <Route path="fundraising/campaigns/:id" element={<CampaignDetail />} />
             <Route path="fundraising/campaigns/:id/edit" element={<CampaignForm />} />
+            <Route path="fundraising/donations" element={<Donations />} />
             <Route path="donors" element={<AdminDonors />} />
             <Route path="donors/new" element={<DonorForm />} />
             <Route path="donors/:id" element={<DonorDetail />} />
