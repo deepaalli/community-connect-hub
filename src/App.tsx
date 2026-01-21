@@ -28,6 +28,9 @@ import HoursApproval from "./pages/admin/HoursApproval";
 import AdminDonors from "./pages/admin/Donors";
 import DonorDetail from "./pages/admin/DonorDetail";
 import DonorForm from "./pages/admin/DonorForm";
+import MarketplaceListings from "./pages/admin/MarketplaceListings";
+import ServiceRequests from "./pages/admin/ServiceRequests";
+import ServiceRequestDetail from "./pages/admin/ServiceRequestDetail";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +69,9 @@ const App = () => (
             <Route path="donors/new" element={<DonorForm />} />
             <Route path="donors/:id" element={<DonorDetail />} />
             <Route path="donors/:id/edit" element={<DonorForm />} />
+            <Route path="marketplace" element={<MarketplaceListings />} />
+            <Route path="marketplace/requests" element={<ServiceRequests />} />
+            <Route path="marketplace/requests/:id" element={<ServiceRequestDetail />} />
             <Route path="organization" element={<AdminOrganization />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>

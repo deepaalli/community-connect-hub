@@ -20,6 +20,7 @@ import {
   LogOut,
   Building2,
   UserCheck,
+  Store,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +30,7 @@ const mainNavItems = [
   { title: "Volunteers", url: "/admin/volunteers", icon: Users },
   { title: "Donors", url: "/admin/donors", icon: UserCheck },
   { title: "Fundraising", url: "/admin/fundraising", icon: Heart },
+  { title: "Marketplace", url: "/admin/marketplace", icon: Store },
 ];
 
 const settingsItems = [
