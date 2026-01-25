@@ -21,14 +21,19 @@ import {
   Building2,
   UserCheck,
   Store,
+  Package,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Events", url: "/admin/events", icon: Calendar },
+  { title: "Event Leads", url: "/admin/events/leads", icon: UserCheck },
   { title: "Volunteers", url: "/admin/volunteers", icon: Users },
-  { title: "Donors", url: "/admin/donors", icon: UserCheck },
+  { title: "Donors", url: "/admin/donors", icon: User },
+  { title: "Sponsors", url: "/admin/sponsors", icon: Heart },
+  { title: "Items Master", url: "/admin/items", icon: Package },
   { title: "Fundraising", url: "/admin/fundraising", icon: Heart },
   { title: "Marketplace", url: "/admin/marketplace", icon: Store },
 ];
