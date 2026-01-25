@@ -17,6 +17,8 @@ import {
   Check,
   X,
   Search,
+  Package,
+  ClipboardList,
 } from "lucide-react";
 import {
   Table,
@@ -32,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EventItemsTab } from "@/components/admin/EventItemsTab";
 
 // Mock data
 const event = {
@@ -109,6 +112,10 @@ export default function EventDetail() {
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="volunteers">
             Volunteers ({event.volunteers})
+          </TabsTrigger>
+          <TabsTrigger value="items" className="gap-1">
+            <Package className="h-4 w-4" />
+            Items & Logistics
           </TabsTrigger>
         </TabsList>
 
@@ -269,7 +276,19 @@ export default function EventDetail() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="items" className="space-y-6">
+          <EventItemsTab />
+        </TabsContent>
       </Tabs>
+
+      {/* Quick Actions */}
+      <div className="flex gap-4">
+        <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/operations`)}>
+          <ClipboardList className="h-4 w-4 mr-2" />
+          Event Operations
+        </Button>
+      </div>
     </div>
   );
 }

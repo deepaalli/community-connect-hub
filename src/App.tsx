@@ -18,6 +18,7 @@ import AdminSettings from "./pages/admin/Settings";
 import EventForm from "./pages/admin/EventForm";
 import EventDetail from "./pages/admin/EventDetail";
 import EventCheckin from "./pages/admin/EventCheckin";
+import EventOperations from "./pages/admin/EventOperations";
 import VolunteerForm from "./pages/admin/VolunteerForm";
 import VolunteerDetail from "./pages/admin/VolunteerDetail";
 import CampaignForm from "./pages/admin/CampaignForm";
@@ -31,6 +32,12 @@ import DonorForm from "./pages/admin/DonorForm";
 import MarketplaceListings from "./pages/admin/MarketplaceListings";
 import ServiceRequests from "./pages/admin/ServiceRequests";
 import ServiceRequestDetail from "./pages/admin/ServiceRequestDetail";
+import ItemMaster from "./pages/admin/ItemMaster";
+import Sponsors from "./pages/admin/Sponsors";
+import SponsorDetail from "./pages/admin/SponsorDetail";
+import SponsorForm from "./pages/admin/SponsorForm";
+import EventLeads from "./pages/admin/EventLeads";
+import AttendeeDetail from "./pages/admin/AttendeeDetail";
 
 const queryClient = new QueryClient();
 
@@ -54,10 +61,13 @@ const App = () => (
             <Route path="events/:id" element={<EventDetail />} />
             <Route path="events/:id/edit" element={<EventForm />} />
             <Route path="events/:id/checkin" element={<EventCheckin />} />
+            <Route path="events/:id/operations" element={<EventOperations />} />
+            <Route path="events/leads" element={<EventLeads />} />
             <Route path="volunteers" element={<AdminVolunteers />} />
             <Route path="volunteers/new" element={<VolunteerForm />} />
             <Route path="volunteers/:id" element={<VolunteerDetail />} />
             <Route path="volunteers/:id/edit" element={<VolunteerForm />} />
+            <Route path="attendees/:id" element={<AttendeeDetail />} />
             <Route path="hours-approval" element={<HoursApproval />} />
             <Route path="fundraising" element={<AdminFundraising />} />
             <Route path="fundraising/campaigns" element={<Campaigns />} />
@@ -69,6 +79,11 @@ const App = () => (
             <Route path="donors/new" element={<DonorForm />} />
             <Route path="donors/:id" element={<DonorDetail />} />
             <Route path="donors/:id/edit" element={<DonorForm />} />
+            <Route path="sponsors" element={<Sponsors />} />
+            <Route path="sponsors/new" element={<SponsorForm />} />
+            <Route path="sponsors/:id" element={<SponsorDetail />} />
+            <Route path="sponsors/:id/edit" element={<SponsorForm />} />
+            <Route path="items" element={<ItemMaster />} />
             <Route path="marketplace" element={<MarketplaceListings />} />
             <Route path="marketplace/requests" element={<ServiceRequests />} />
             <Route path="marketplace/requests/:id" element={<ServiceRequestDetail />} />
