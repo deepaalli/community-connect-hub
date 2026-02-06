@@ -1,46 +1,31 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Heart, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const stats = [
-  {
-    title: "Total Events",
-    value: "24",
-    change: "+3 this month",
-    icon: Calendar,
-  },
-  {
-    title: "Active Volunteers",
-    value: "156",
-    change: "+12 this week",
-    icon: Users,
-  },
-  {
-    title: "Funds Raised",
-    value: "$45,230",
-    change: "+18% from last month",
-    icon: Heart,
-  },
-  {
-    title: "Event Attendees",
-    value: "1,234",
-    change: "+8% growth",
-    icon: TrendingUp,
-  },
-];
+import { fetchDashboard } from "@/services/backend";
+import { DashboardData } from "@/types";
+import { dashboardData } from "@/mocks/data";
 
-const recentEvents = [
-  { name: "Community Cleanup Day", date: "Jan 15, 2026", attendees: 45, status: "Upcoming" },
-  { name: "Food Drive Collection", date: "Jan 10, 2026", attendees: 128, status: "Completed" },
-  { name: "Youth Mentorship Workshop", date: "Jan 8, 2026", attendees: 32, status: "Completed" },
-];
-
-const recentVolunteers = [
-  { name: "Sarah Johnson", role: "Event Coordinator", joinedDate: "Jan 2, 2026" },
-  { name: "Michael Chen", role: "Food Bank Helper", joinedDate: "Jan 1, 2026" },
-  { name: "Emily Davis", role: "Youth Mentor", joinedDate: "Dec 28, 2025" },
-];
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Calendar,
+  Users,
+  Heart,
+  TrendingUp,
+};
 
 export default function Dashboard() {
+  const [data, setData] = useState<DashboardData>(dashboardData);
+
+  useEffect(() => {
+    fetchDashboard()
+      .then((res) => setData(res && Array.isArray(res.stats) ? res : dashboardData))
+      .catch(() => setData(dashboardData));
+  }, []);
+
+  const stats = data?.stats ?? [];
+  const recentEvents = data?.recentEvents ?? [];
+  const recentVolunteers = data?.recentVolunteers ?? [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -50,20 +35,23 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.change}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {stats.map((stat) => {
+          const Icon = iconMap[stat.icon] || Calendar;
+          return (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">{stat.change}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Recent Activity */}

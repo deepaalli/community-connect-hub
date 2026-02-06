@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,74 +26,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const events = [
-  {
-    id: 1,
-    title: "Community Cleanup Day",
-    date: "Jan 15, 2026",
-    time: "9:00 AM",
-    location: "Central Park",
-    volunteerSlots: 50,
-    registeredAttendees: 45,
-    status: "published",
-    category: "environment",
-  },
-  {
-    id: 2,
-    title: "Youth Mentorship Workshop",
-    date: "Jan 20, 2026",
-    time: "2:00 PM",
-    location: "Community Center",
-    volunteerSlots: 30,
-    registeredAttendees: 12,
-    status: "published",
-    category: "education",
-  },
-  {
-    id: 3,
-    title: "Food Drive Collection",
-    date: "Jan 10, 2026",
-    time: "10:00 AM",
-    location: "Downtown Square",
-    volunteerSlots: 100,
-    registeredAttendees: 128,
-    status: "completed",
-    category: "food",
-  },
-  {
-    id: 4,
-    title: "Senior Care Visit",
-    date: "Jan 25, 2026",
-    time: "11:00 AM",
-    location: "Sunshine Retirement Home",
-    volunteerSlots: 20,
-    registeredAttendees: 8,
-    status: "draft",
-    category: "seniors",
-  },
-  {
-    id: 5,
-    title: "Beach Restoration Project",
-    date: "Jan 5, 2026",
-    time: "8:00 AM",
-    location: "Ocean Beach",
-    volunteerSlots: 75,
-    registeredAttendees: 60,
-    status: "cancelled",
-    category: "environment",
-  },
-];
+import { fetchEvents } from "@/services/backend";
+import { events as eventsFallback } from "@/mocks/data";
+import { Event } from "@/types";
 
 export default function AdminEvents() {
   const navigate = useNavigate();
+  const [eventsData, setEventsData] = useState<Event[]>(eventsFallback);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  const filteredEvents = events.filter((event) => {
+  useEffect(() => {
+    fetchEvents()
+      .then((res) => setEventsData(Array.isArray(res) ? res : eventsFallback))
+      .catch(() => setEventsData(eventsFallback));
+  }, []);
+
+  const filteredEvents = (Array.isArray(eventsData) ? eventsData : eventsFallback).filter((event) => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || event.status === statusFilter;
     const matchesCategory = categoryFilter === "all" || event.category === categoryFilter;
