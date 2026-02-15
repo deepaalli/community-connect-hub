@@ -91,7 +91,7 @@ const App = () => (
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE -1*/}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
